@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.StudyGoalMapper">
+
+    <resultMap id="StudyGoalEntityResultMap" type="com.unilife.model.entity.StudyGoal">
+        <id property="id" column="sg_id"/>
+        <result property="userId" column="sg_user_id"/>
+        <result property="courseId" column="sg_course_id"/>
+        <result property="goalTitle" column="sg_goal_title"/>
+        <result property="goalDescription" column="sg_goal_description"/>
+        <result property="targetDate" column="sg_target_date"/>
+        <result property="status" column="sg_status"/>
+        <result property="priority" column="sg_priority"/>
+        <result property="createdAt" column="sg_created_at"/>
+        <result property="updatedAt" column="sg_updated_at"/>
+    </resultMap>
+
+    <resultMap id="StudyGoalDtoResultMap" type="com.unilife.model.dto.StudyGoalDto">
+        <id property="id" column="sg_id"/>
+        <result property="userId" column="sg_user_id"/>
+        <result property="courseId" column="sg_course_id"/>
+        <result property="courseName" column="c_course_name"/> <!-- From joined courses table -->
+        <result property="goalTitle" column="sg_goal_title"/>
+        <result property="goalDescription" column="sg_goal_description"/>
+        <result property="targetDate" column="sg_target_date"/>
+        <result property="status" column="sg_status"/>
+        <result property="priority" column="sg_priority"/>
+        <result property="createdAt" column="sg_created_at"/>
+        <result property="updatedAt" column="sg_updated_at"/>
+    </resultMap>
+
+    <sql id="studyGoalColumns">
+        sg.id as sg_id, sg.user_id as sg_user_id, sg.course_id as sg_course_id,
+        sg.goal_title as sg_goal_title, sg.goal_description as sg_goal_description,
+        sg.target_date as sg_target_date, sg.status as sg_status, sg.priority as sg_priority,
+        sg.created_at as sg_created_at, sg.updated_at as sg_updated_at
+    </sql>
+
+    <sql id="courseNameColumn">
+        c.course_name as c_course_name
+    </sql>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO study_goals (user_id, course_id, goal_title, goal_description,
+                                 target_date, status, priority, created_at, updated_at)
+        VALUES (#{userId}, #{courseId}, #{goalTitle}, #{goalDescription},
+                #{targetDate}, #{status}, #{priority}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <select id="findById" resultMap="StudyGoalDtoResultMap">
+        SELECT
+            <include refid="studyGoalColumns"/>,
+            <include refid="courseNameColumn"/>
+        FROM study_goals sg
+        LEFT JOIN courses c ON sg.course_id = c.id <!-- Assuming 'courses' table name -->
+        WHERE sg.id = #{id}
+    </select>
+    
+    <select id="findRawById" resultMap="StudyGoalEntityResultMap">
+        SELECT
+            <include refid="studyGoalColumns"/>
+        FROM study_goals sg
+        WHERE sg.id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="StudyGoalDtoResultMap">
+        SELECT
+            <include refid="studyGoalColumns"/>,
+            <include refid="courseNameColumn"/>
+        FROM study_goals sg
+        LEFT JOIN courses c ON sg.course_id = c.id
+        WHERE sg.user_id = #{userId}
+        ORDER BY sg.target_date ASC, sg.priority DESC
+    </select>
+
+    <select id="findByUserIdAndStatus" resultMap="StudyGoalDtoResultMap">
+        SELECT
+            <include refid="studyGoalColumns"/>,
+            <include refid="courseNameColumn"/>
+        FROM study_goals sg
+        LEFT JOIN courses c ON sg.course_id = c.id
+        WHERE sg.user_id = #{userId} AND sg.status = #{status}
+        ORDER BY sg.target_date ASC, sg.priority DESC
+    </select>
+
+    <select id="findByUserIdAndCourseId" resultMap="StudyGoalDtoResultMap">
+        SELECT
+            <include refid="studyGoalColumns"/>,
+            <include refid="courseNameColumn"/>
+        FROM study_goals sg
+        LEFT JOIN courses c ON sg.course_id = c.id
+        WHERE sg.user_id = #{userId} AND sg.course_id = #{courseId}
+        ORDER BY sg.target_date ASC, sg.priority DESC
+    </select>
+
+    <update id="update">
+        UPDATE study_goals
+        <set>
+            <if test="courseId != null or courseId == null"> <!-- Allow setting courseId to null -->
+                course_id = #{courseId},
+            </if>
+            <if test="goalTitle != null">goal_title = #{goalTitle},</if>
+            <if test="goalDescription != null">goal_description = #{goalDescription},</if>
+            <if test="targetDate != null">target_date = #{targetDate},</if>
+            <if test="status != null">status = #{status},</if>
+            <!-- priority is an int, so it's always passed. No null check needed if it's a primitive in DTO/Entity. -->
+            priority = #{priority},
+            updated_at = #{updatedAt} <!-- Always update updatedAt -->
+        </set>
+        WHERE id = #{id} AND user_id = #{userId} <!-- Ensure user owns the goal -->
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM study_goals WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <select id="findPendingReminders" resultMap="StudyGoalEntityResultMap"> <!-- Changed to EntityResultMap -->
+        SELECT
+            <include refid="studyGoalColumns"/>
+        FROM study_goals sg
+        WHERE sg.user_id = #{userId}
+          AND sg.reminder_enabled = TRUE
+          AND sg.reminder_sent = FALSE
+          AND sg.reminder_time &lt;= #{currentTime}
+    </select>
+
+</mapper>

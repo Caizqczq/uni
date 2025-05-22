@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.PostMapper">
+
+    <resultMap id="PostEntityResultMap" type="com.unilife.model.entity.Post">
+        <id property="id" column="p_id"/>
+        <result property="title" column="p_title"/>
+        <result property="content" column="p_content"/>
+        <result property="userId" column="p_user_id"/>
+        <result property="topicId" column="p_topic_id"/>
+        <result property="createdAt" column="p_created_at"/>
+        <result property="updatedAt" column="p_updated_at"/>
+        <result property="likesCount" column="p_likes_count"/>
+    </resultMap>
+
+    <resultMap id="PostResponseDtoResultMap" type="com.unilife.model.dto.PostResponseDto">
+        <id property="id" column="p_id"/>
+        <result property="title" column="p_title"/>
+        <result property="content" column="p_content"/>
+        <result property="authorUsername" column="u_username"/>
+        <result property="authorNickname" column="u_nickname"/>
+        <result property="authorAvatarUrl" column="u_avatar_url"/>
+        <result property="topicName" column="t_name"/>
+        <result property="createdAt" column="p_created_at"/>
+        <result property="updatedAt" column="p_updated_at"/>
+        <result property="likesCount" column="p_likes_count"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO posts (title, content, user_id, topic_id, created_at, updated_at, likes_count)
+        VALUES (#{title}, #{content}, #{userId}, #{topicId}, #{createdAt}, #{updatedAt}, #{likesCount})
+    </insert>
+
+    <select id="findById" resultMap="PostEntityResultMap">
+        SELECT
+            p.id as p_id, p.title as p_title, p.content as p_content,
+            p.user_id as p_user_id, p.topic_id as p_topic_id,
+            p.created_at as p_created_at, p.updated_at as p_updated_at, p.likes_count as p_likes_count
+        FROM posts p
+        WHERE p.id = #{id}
+    </select>
+
+    <select id="findByIdWithDetails" resultMap="PostResponseDtoResultMap">
+        SELECT
+            p.id as p_id, p.title as p_title, p.content as p_content,
+            p.created_at as p_created_at, p.updated_at as p_updated_at, p.likes_count as p_likes_count,
+            u.username as u_username, u.nickname as u_nickname, u.avatar_url as u_avatar_url,
+            t.name as t_name
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        JOIN topics t ON p.topic_id = t.id
+        WHERE p.id = #{id}
+    </select>
+
+    <sql id="selectPostDetails">
+        SELECT
+            p.id as p_id, p.title as p_title, p.content as p_content,
+            p.created_at as p_created_at, p.updated_at as p_updated_at, p.likes_count as p_likes_count,
+            u.username as u_username, u.nickname as u_nickname, u.avatar_url as u_avatar_url,
+            t.name as t_name
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        JOIN topics t ON p.topic_id = t.id
+    </sql>
+
+    <sql id="postFilters">
+        <where>
+            <if test="topicId != null">
+                AND p.topic_id = #{topicId}
+            </if>
+            <if test="userId != null">
+                AND p.user_id = #{userId}
+            </if>
+            <!-- Add other filters like title search if needed -->
+        </where>
+    </sql>
+
+    <select id="findAllWithDetails" resultMap="PostResponseDtoResultMap">
+        <include refid="selectPostDetails"/>
+        <include refid="postFilters"/>
+        ORDER BY p.created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*)
+        FROM posts p
+        <include refid="postFilters"/>
+    </select>
+
+    <update id="update">
+        UPDATE posts
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="topicId != null">topic_id = #{topicId},</if>
+            updated_at = #{updatedAt}, <!-- Always update updatedAt -->
+            <if test="likesCount != null">likes_count = #{likesCount}</if> <!-- Usually updated by separate methods -->
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM posts WHERE id = #{id}
+    </delete>
+
+    <update id="incrementLikesCount">
+        UPDATE posts SET likes_count = likes_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="decrementLikesCount">
+        UPDATE posts SET likes_count = likes_count - 1 WHERE id = #{id} AND likes_count > 0
+    </update>
+
+    <sql id="postSearchConditions">
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (
+                LOWER(p.title) LIKE LOWER(CONCAT('%', #{searchTerm}, '%')) OR
+                LOWER(p.content) LIKE LOWER(CONCAT('%', #{searchTerm}, '%'))
+            )
+        </if>
+        <if test="topicId != null">
+            AND p.topic_id = #{topicId}
+        </if>
+        <if test="userId != null"> <!-- This refers to authorId for the post -->
+            AND p.user_id = #{userId}
+        </if>
+    </sql>
+
+    <select id="searchPosts" resultMap="PostResponseDtoResultMap">
+        <include refid="selectPostDetails"/> <!-- Reuses the existing SQL for selecting post details -->
+        <where>
+            <include refid="postSearchConditions"/>
+        </where>
+        ORDER BY p.created_at DESC <!-- Or relevance score if using full-text search -->
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countSearchPosts" resultType="long">
+        SELECT COUNT(DISTINCT p.id)
+        FROM posts p
+        <!-- Joins might be needed here if search criteria involve joined tables, but for title/content/topicId/userId on post table, not strictly necessary for count if filters are on 'p' -->
+        <!-- However, to be consistent with how filters are applied, include them if they reference aliases from selectPostDetails -->
+        <!-- For simplicity, if postSearchConditions only filters on 'p' table columns, this is okay. -->
+        <!-- If postSearchConditions could filter on u.username or t.name, then joins are needed. -->
+        <!-- Current postSearchConditions filters only on p.title, p.content, p.topic_id, p.user_id, so direct count is fine. -->
+        <where>
+            <include refid="postSearchConditions"/>
+        </where>
+    </select>
+
+</mapper>

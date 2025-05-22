@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.TopicMapper">
+
+    <resultMap id="TopicResultMap" type="com.unilife.model.entity.Topic">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO topics (name, description, created_at)
+        VALUES (#{name}, #{description}, #{createdAt})
+    </insert>
+
+    <select id="findById" resultMap="TopicResultMap">
+        SELECT id, name, description, created_at FROM topics WHERE id = #{id}
+    </select>
+
+    <select id="findByName" resultMap="TopicResultMap">
+        SELECT id, name, description, created_at FROM topics WHERE name = #{name}
+    </select>
+
+    <select id="findAll" resultMap="TopicResultMap">
+        SELECT id, name, description, created_at FROM topics ORDER BY created_at DESC
+    </select>
+
+    <update id="update">
+        UPDATE topics
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <!-- createdAt is generally not updated -->
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM topics WHERE id = #{id}
+    </delete>
+
+</mapper>

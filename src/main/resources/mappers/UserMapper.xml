@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.unilife.model.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="school" column="school"/>
+        <result property="studentId" column="student_id"/>
+        <result property="registrationDate" column="registration_date"/>
+        <result property="lastLoginDate" column="last_login_date"/>
+        <result property="enabled" column="enabled"/>
+        <!-- Note: roles handling might need a separate table and join in a real scenario -->
+        <!-- For simplicity, if roles are stored as a comma-separated string in a single column,
+             you might need a type handler or handle it in the service layer.
+             Assuming a simple string column for now, or this part to be adjusted later. -->
+        <!-- <result property="roles" column="roles"/> -->
+    </resultMap>
+
+    <select id="findById" resultMap="UserResultMap">
+        SELECT id, username, password, email, nickname, avatar_url, school, student_id, registration_date, last_login_date, enabled
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT id, username, password, email, nickname, avatar_url, school, student_id, registration_date, last_login_date, enabled
+        FROM users
+        WHERE username = #{username}
+    </select>
+
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT id, username, password, email, nickname, avatar_url, school, student_id, registration_date, last_login_date, enabled
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <select id="existsByUsername" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE username = #{username}
+    </select>
+
+    <select id="existsByEmail" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE email = #{email}
+    </select>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, email, nickname, avatar_url, school, student_id, registration_date, last_login_date, enabled)
+        VALUES (#{username}, #{password}, #{email}, #{nickname}, #{avatarUrl}, #{school}, #{studentId}, #{registrationDate}, #{lastLoginDate}, #{enabled})
+    </insert>
+
+    <update id="update">
+        UPDATE users
+        <set>
+            <if test="password != null">password = #{password},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="school != null">school = #{school},</if>
+            <if test="studentId != null">student_id = #{studentId},</if>
+            <if test="lastLoginDate != null">last_login_date = #{lastLoginDate},</if>
+            <if test="enabled != null">enabled = #{enabled},</if>
+            <!-- username and email are typically not updated or handled with care -->
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>
