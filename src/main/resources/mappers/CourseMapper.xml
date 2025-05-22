@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.CourseMapper">
+
+    <resultMap id="CourseResultMap" type="com.unilife.model.entity.Course">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="classroom" column="classroom"/>
+        <result property="dayOfWeek" column="day_of_week"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="weekType" column="week_type"/>
+        <result property="startWeek" column="start_week"/>
+        <result property="endWeek" column="end_week"/>
+        <result property="notes" column="notes"/>
+        <result property="color" column="color"/>
+        <result property="importedFromApi" column="imported_from_api"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO courses (user_id, course_name, teacher_name, classroom, day_of_week,
+                             start_time, end_time, week_type, start_week, end_week,
+                             notes, color, imported_from_api)
+        VALUES (#{userId}, #{courseName}, #{teacherName}, #{classroom}, #{dayOfWeek},
+                #{startTime}, #{endTime}, #{weekType}, #{startWeek}, #{endWeek},
+                #{notes}, #{color}, #{importedFromApi})
+    </insert>
+
+    <select id="findById" resultMap="CourseResultMap">
+        SELECT * FROM courses WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="CourseResultMap">
+        SELECT * FROM courses WHERE user_id = #{userId} ORDER BY day_of_week, start_time
+    </select>
+
+    <select id="findByUserIdAndDay" resultMap="CourseResultMap">
+        SELECT * FROM courses
+        WHERE user_id = #{userId} AND day_of_week = #{dayOfWeek}
+        ORDER BY start_time
+    </select>
+
+    <update id="update">
+        UPDATE courses
+        <set>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="teacherName != null">teacher_name = #{teacherName},</if>
+            <if test="classroom != null">classroom = #{classroom},</if>
+            <if test="dayOfWeek != null">day_of_week = #{dayOfWeek},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="weekType != null">week_type = #{weekType},</if>
+            <if test="startWeek != null">start_week = #{startWeek},</if>
+            <if test="endWeek != null">end_week = #{endWeek},</if>
+            <if test="notes != null">notes = #{notes},</if>
+            <if test="color != null">color = #{color},</if>
+            <if test="importedFromApi != null">imported_from_api = #{importedFromApi},</if>
+        </set>
+        WHERE id = #{id} AND user_id = #{userId} <!-- Important: ensure user owns the course being updated -->
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM courses WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM courses WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

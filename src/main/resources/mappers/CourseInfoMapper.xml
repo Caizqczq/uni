@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.CourseInfoMapper">
+
+    <resultMap id="CourseInfoResultMap" type="com.unilife.model.entity.CourseInfo">
+        <id property="id" column="id"/>
+        <result property="courseCode" column="course_code"/>
+        <result property="courseName" column="course_name"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course_info (course_code, course_name, description, created_at)
+        VALUES (#{courseCode}, #{courseName}, #{description}, #{createdAt})
+    </insert>
+
+    <select id="findById" resultMap="CourseInfoResultMap">
+        SELECT id, course_code, course_name, description, created_at
+        FROM course_info
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByCourseCode" resultMap="CourseInfoResultMap">
+        SELECT id, course_code, course_name, description, created_at
+        FROM course_info
+        WHERE course_code = #{courseCode}
+    </select>
+
+    <select id="findAll" resultMap="CourseInfoResultMap">
+        SELECT id, course_code, course_name, description, created_at
+        FROM course_info
+        ORDER BY course_name ASC
+    </select>
+
+    <update id="update">
+        UPDATE course_info
+        <set>
+            <if test="courseCode != null">course_code = #{courseCode},</if>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="description != null">description = #{description},</if>
+            <!-- createdAt is generally not updated -->
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM course_info WHERE id = #{id}
+    </delete>
+
+    <sql id="courseSearchCondition">
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (
+                LOWER(course_code) LIKE LOWER(CONCAT('%', #{searchTerm}, '%')) OR
+                LOWER(course_name) LIKE LOWER(CONCAT('%', #{searchTerm}, '%')) OR
+                LOWER(description) LIKE LOWER(CONCAT('%', #{searchTerm}, '%'))
+            )
+        </if>
+    </sql>
+
+    <select id="searchCourses" resultMap="CourseInfoResultMap"> <!-- Changed to CourseInfoResultMap -->
+        SELECT id, course_code, course_name, description, created_at
+        FROM course_info
+        <where>
+            <include refid="courseSearchCondition"/>
+        </where>
+        ORDER BY course_name ASC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countSearchCourses" resultType="long">
+        SELECT COUNT(*)
+        FROM course_info
+        <where>
+            <include refid="courseSearchCondition"/>
+        </where>
+    </select>
+
+</mapper>

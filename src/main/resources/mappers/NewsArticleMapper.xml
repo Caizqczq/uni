@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.NewsArticleMapper">
+
+    <resultMap id="NewsArticleEntityResultMap" type="com.unilife.model.entity.NewsArticle">
+        <id property="id" column="na_id"/>
+        <result property="title" column="na_title"/>
+        <result property="content" column="na_content"/>
+        <result property="source" column="na_source"/>
+        <result property="author" column="na_author"/>
+        <result property="publishedAt" column="na_published_at"/>
+        <result property="createdAt" column="na_created_at"/>
+        <result property="updatedAt" column="na_updated_at"/>
+        <result property="userId" column="na_user_id"/>
+    </resultMap>
+
+    <resultMap id="NewsArticleDtoResultMap" type="com.unilife.model.dto.NewsArticleDto">
+        <id property="id" column="na_id"/>
+        <result property="title" column="na_title"/>
+        <result property="content" column="na_content"/>
+        <result property="source" column="na_source"/>
+        <result property="author" column="na_author"/>
+        <result property="publishedAt" column="na_published_at"/>
+        <result property="createdAt" column="na_created_at"/>
+        <result property="updatedAt" column="na_updated_at"/>
+        <result property="postedBy" column="u_nickname"/> <!-- Or u_username -->
+    </resultMap>
+
+    <sql id="newsArticleColumns">
+        na.id as na_id, na.title as na_title, na.content as na_content,
+        na.source as na_source, na.author as na_author,
+        na.published_at as na_published_at, na.created_at as na_created_at,
+        na.updated_at as na_updated_at, na.user_id as na_user_id
+    </sql>
+
+    <sql id="userColumnsForPostedBy">
+        u.nickname as u_nickname, u.username as u_username
+    </sql>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO news_articles (title, content, source, author, published_at, created_at, updated_at, user_id)
+        VALUES (#{title}, #{content}, #{source}, #{author}, #{publishedAt}, #{createdAt}, #{updatedAt}, #{userId})
+    </insert>
+
+    <select id="findById" resultMap="NewsArticleDtoResultMap">
+        SELECT
+            <include refid="newsArticleColumns"/>,
+            <include refid="userColumnsForPostedBy"/>
+        FROM news_articles na
+        LEFT JOIN users u ON na.user_id = u.id
+        WHERE na.id = #{id}
+    </select>
+    
+    <select id="findRawById" resultMap="NewsArticleEntityResultMap">
+        SELECT
+            <include refid="newsArticleColumns"/>
+        FROM news_articles na
+        WHERE na.id = #{id}
+    </select>
+
+
+    <select id="findAll" resultMap="NewsArticleDtoResultMap">
+        SELECT
+            <include refid="newsArticleColumns"/>,
+            <include refid="userColumnsForPostedBy"/>
+        FROM news_articles na
+        LEFT JOIN users u ON na.user_id = u.id
+        ORDER BY na.published_at DESC, na.created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*)
+        FROM news_articles na
+        <!-- Add filters here if any -->
+    </select>
+
+    <update id="update">
+        UPDATE news_articles
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="source != null">source = #{source},</if>
+            <if test="author != null">author = #{author},</if>
+            <if test="publishedAt != null">published_at = #{publishedAt},</if>
+            updated_at = #{updatedAt}, <!-- Always update updatedAt -->
+            <if test="userId != null">user_id = #{userId}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM news_articles WHERE id = #{id}
+    </delete>
+
+</mapper>

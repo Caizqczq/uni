@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.SharedFileMapper">
+
+    <resultMap id="SharedFileEntityResultMap" type="com.unilife.model.entity.SharedFile">
+        <id property="id" column="sf_id"/>
+        <result property="fileName" column="sf_file_name"/>
+        <result property="storedFileName" column="sf_stored_file_name"/>
+        <result property="filePath" column="sf_file_path"/>
+        <result property="fileType" column="sf_file_type"/>
+        <result property="fileSize" column="sf_file_size"/>
+        <result property="courseId" column="sf_course_id"/>
+        <result property="uploadedByUserId" column="sf_uploaded_by_user_id"/>
+        <result property="createdAt" column="sf_created_at"/>
+        <result property="description" column="sf_description"/>
+    </resultMap>
+
+    <resultMap id="SharedFileResponseDtoResultMap" type="com.unilife.model.dto.SharedFileResponseDto">
+        <id property="id" column="sf_id"/>
+        <result property="fileName" column="sf_file_name"/>
+        <result property="fileType" column="sf_file_type"/>
+        <result property="fileSize" column="sf_file_size"/>
+        <result property="uploadedByUsername" column="uploader_username"/>
+        <result property="createdAt" column="sf_created_at"/>
+        <result property="description" column="sf_description"/>
+        <association property="courseInfo" javaType="com.unilife.model.dto.CourseInfoDto">
+            <id property="id" column="ci_id"/>
+            <result property="courseCode" column="ci_course_code"/>
+            <result property="courseName" column="ci_course_name"/>
+            <result property="description" column="ci_description"/>
+        </association>
+    </resultMap>
+
+    <sql id="sharedFileColumns">
+        sf.id as sf_id, sf.file_name as sf_file_name, sf.stored_file_name as sf_stored_file_name,
+        sf.file_path as sf_file_path, sf.file_type as sf_file_type, sf.file_size as sf_file_size,
+        sf.course_id as sf_course_id, sf.uploaded_by_user_id as sf_uploaded_by_user_id,
+        sf.created_at as sf_created_at, sf.description as sf_description
+    </sql>
+
+    <sql id="courseInfoColumnsForSharedFile">
+        ci.id as ci_id, ci.course_code as ci_course_code, ci.course_name as ci_course_name,
+        ci.description as ci_description
+    </sql>
+
+    <sql id="userUploaderColumns">
+        u.username as uploader_username, u.nickname as uploader_nickname
+    </sql>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO shared_files (file_name, stored_file_name, file_path, file_type, file_size, course_id, uploaded_by_user_id, created_at, description)
+        VALUES (#{fileName}, #{storedFileName}, #{filePath}, #{fileType}, #{fileSize}, #{courseId}, #{uploadedByUserId}, #{createdAt}, #{description})
+    </insert>
+
+    <select id="findById" resultMap="SharedFileResponseDtoResultMap">
+        SELECT
+            <include refid="sharedFileColumns"/>,
+            <include refid="courseInfoColumnsForSharedFile"/>,
+            <include refid="userUploaderColumns"/>
+        FROM shared_files sf
+        JOIN users u ON sf.uploaded_by_user_id = u.id
+        LEFT JOIN course_info ci ON sf.course_id = ci.id
+        WHERE sf.id = #{id}
+    </select>
+
+    <select id="findRawById" resultMap="SharedFileEntityResultMap">
+        SELECT
+            <include refid="sharedFileColumns"/>
+        FROM shared_files sf
+        WHERE sf.id = #{id}
+    </select>
+
+    <select id="findByCourseId" resultMap="SharedFileResponseDtoResultMap">
+        SELECT
+            <include refid="sharedFileColumns"/>,
+            <include refid="courseInfoColumnsForSharedFile"/>,
+            <include refid="userUploaderColumns"/>
+        FROM shared_files sf
+        JOIN users u ON sf.uploaded_by_user_id = u.id
+        LEFT JOIN course_info ci ON sf.course_id = ci.id
+        WHERE sf.course_id = #{courseId}
+        ORDER BY sf.created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countByCourseId" resultType="long">
+        SELECT COUNT(*)
+        FROM shared_files
+        WHERE course_id = #{courseId}
+    </select>
+
+    <select id="findAll" resultMap="SharedFileResponseDtoResultMap">
+        SELECT
+            <include refid="sharedFileColumns"/>,
+            <include refid="courseInfoColumnsForSharedFile"/>,
+            <include refid="userUploaderColumns"/>
+        FROM shared_files sf
+        JOIN users u ON sf.uploaded_by_user_id = u.id
+        LEFT JOIN course_info ci ON sf.course_id = ci.id
+        ORDER BY sf.created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*)
+        FROM shared_files sf
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM shared_files WHERE id = #{id}
+    </delete>
+
+    <sql id="fileSearchCondition">
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (
+                LOWER(sf.file_name) LIKE LOWER(CONCAT('%', #{searchTerm}, '%')) OR
+                LOWER(sf.description) LIKE LOWER(CONCAT('%', #{searchTerm}, '%'))
+            )
+        </if>
+        <if test="courseId != null">
+            AND sf.course_id = #{courseId}
+        </if>
+    </sql>
+
+    <select id="searchSharedFiles" resultMap="SharedFileResponseDtoResultMap">
+        SELECT
+            <include refid="sharedFileColumns"/>,
+            <include refid="courseInfoColumnsForSharedFile"/>,
+            <include refid="userUploaderColumns"/>
+        FROM shared_files sf
+        JOIN users u ON sf.uploaded_by_user_id = u.id
+        LEFT JOIN course_info ci ON sf.course_id = ci.id
+        <where>
+            <include refid="fileSearchCondition"/>
+        </where>
+        ORDER BY sf.created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countSearchSharedFiles" resultType="long">
+        SELECT COUNT(DISTINCT sf.id)
+        FROM shared_files sf
+        LEFT JOIN course_info ci ON sf.course_id = ci.id <!-- Join needed if courseId is part of search criteria and not directly on sf -->
+        JOIN users u ON sf.uploaded_by_user_id = u.id
+        <where>
+            <include refid="fileSearchCondition"/>
+        </where>
+    </select>
+
+</mapper>

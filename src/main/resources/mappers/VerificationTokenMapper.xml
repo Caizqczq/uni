@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.VerificationTokenMapper">
+
+    <resultMap id="VerificationTokenResultMap" type="com.unilife.model.entity.VerificationToken">
+        <id property="id" column="id"/>
+        <result property="token" column="token"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <!-- Mapping for the User object associated with this token -->
+        <!-- This assumes you have a UserResultMap in UserMapper.xml that can be referenced -->
+        <!-- Or, you define a simplified User mapping here if only ID is needed initially -->
+        <association property="user" javaType="com.unilife.model.entity.User">
+            <id property="id" column="user_id"/>
+            <!-- You can add more user properties if needed, or join query in findByToken -->
+        </association>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO verification_tokens (token, user_id, expiry_date)
+        VALUES (#{token}, #{user.id}, #{expiryDate})
+    </insert>
+
+    <select id="findByToken" resultMap="VerificationTokenResultMap">
+        SELECT vt.id, vt.token, vt.expiry_date, u.id as user_id, u.username as username, u.email as email, u.enabled as enabled
+        FROM verification_tokens vt
+        JOIN users u ON vt.user_id = u.id
+        WHERE vt.token = #{token}
+    </select>
+
+    <select id="findAllByUserId" resultMap="VerificationTokenResultMap">
+        SELECT vt.id, vt.token, vt.expiry_date, u.id as user_id
+        FROM verification_tokens vt
+        JOIN users u ON vt.user_id = u.id
+        WHERE vt.user_id = #{userId}
+    </select>
+
+    <update id="updateTokenExpiry">
+        UPDATE verification_tokens
+        SET expiry_date = #{expiryDate}
+        WHERE token = #{token}
+    </update>
+
+    <delete id="deleteByToken">
+        DELETE FROM verification_tokens WHERE token = #{token}
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM verification_tokens WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.PointTransactionMapper">
+
+    <resultMap id="PointTransactionEntityResultMap" type="com.unilife.model.entity.PointTransaction">
+        <id property="id" column="pt_id"/>
+        <result property="userId" column="pt_user_id"/>
+        <result property="pointsAwarded" column="pt_points_awarded"/>
+        <result property="actionType" column="pt_action_type" javaType="com.unilife.model.enums.PointActionType" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="description" column="pt_description"/>
+        <result property="relatedEntityId" column="pt_related_entity_id"/>
+        <result property="transactionDate" column="pt_transaction_date"/>
+    </resultMap>
+
+    <resultMap id="PointTransactionDtoResultMap" type="com.unilife.model.dto.PointTransactionDto">
+        <id property="id" column="pt_id"/>
+        <result property="userId" column="pt_user_id"/>
+        <result property="username" column="u_username"/>
+        <result property="pointsAwarded" column="pt_points_awarded"/>
+        <result property="actionType" column="pt_action_type" javaType="com.unilife.model.enums.PointActionType" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <!-- actionTypeDescription will be set in DTO constructor based on actionType -->
+        <result property="description" column="pt_description"/>
+        <result property="relatedEntityId" column="pt_related_entity_id"/>
+        <result property="transactionDate" column="pt_transaction_date"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO point_transactions (user_id, points_awarded, action_type, description, related_entity_id, transaction_date)
+        VALUES (#{userId}, #{pointsAwarded}, #{actionType, typeHandler=org.apache.ibatis.type.EnumTypeHandler}, #{description}, #{relatedEntityId}, #{transactionDate})
+    </insert>
+
+    <select id="findByUserId" resultMap="PointTransactionDtoResultMap">
+        SELECT
+            pt.id as pt_id, pt.user_id as pt_user_id, pt.points_awarded as pt_points_awarded,
+            pt.action_type as pt_action_type, pt.description as pt_description,
+            pt.related_entity_id as pt_related_entity_id, pt.transaction_date as pt_transaction_date,
+            u.username as u_username
+        FROM point_transactions pt
+        JOIN users u ON pt.user_id = u.id
+        WHERE pt.user_id = #{userId}
+        ORDER BY pt.transaction_date DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM point_transactions
+        WHERE user_id = #{userId}
+    </select>
+    
+    <select id="findLastDailyLoginTransaction" resultMap="PointTransactionEntityResultMap">
+        SELECT id as pt_id, user_id as pt_user_id, points_awarded as pt_points_awarded,
+               action_type as pt_action_type, description as pt_description,
+               related_entity_id as pt_related_entity_id, transaction_date as pt_transaction_date
+        FROM point_transactions
+        WHERE user_id = #{userId} AND action_type = #{actionType, typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+        ORDER BY transaction_date DESC
+        LIMIT 1
+    </select>
+
+</mapper>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.SharedDocumentMapper">
+
+    <resultMap id="SharedDocumentEntityResultMap" type="com.unilife.model.entity.SharedDocument">
+        <id property="id" column="sd_id"/>
+        <result property="title" column="sd_title"/>
+        <result property="content" column="sd_content"/>
+        <result property="courseId" column="sd_course_id"/>
+        <result property="createdByUserId" column="sd_created_by_user_id"/>
+        <result property="lastUpdatedByUserId" column="sd_last_updated_by_user_id"/>
+        <result property="createdAt" column="sd_created_at"/>
+        <result property="updatedAt" column="sd_updated_at"/>
+        <result property="version" column="sd_version"/>
+    </resultMap>
+
+    <resultMap id="SharedDocumentResponseDtoResultMap" type="com.unilife.model.dto.SharedDocumentResponseDto">
+        <id property="id" column="sd_id"/>
+        <result property="title" column="sd_title"/>
+        <result property="content" column="sd_content"/>
+        <result property="createdByUsername" column="creator_username"/>
+        <result property="lastUpdatedByUsername" column="updater_username"/>
+        <result property="createdAt" column="sd_created_at"/>
+        <result property="updatedAt" column="sd_updated_at"/>
+        <result property="version" column="sd_version"/>
+        <association property="courseInfo" javaType="com.unilife.model.dto.CourseInfoDto">
+            <id property="id" column="ci_id"/>
+            <result property="courseCode" column="ci_course_code"/>
+            <result property="courseName" column="ci_course_name"/>
+            <result property="description" column="ci_description"/>
+        </association>
+    </resultMap>
+
+    <sql id="sharedDocumentColumns">
+        sd.id as sd_id, sd.title as sd_title, sd.content as sd_content,
+        sd.course_id as sd_course_id, sd.created_by_user_id as sd_created_by_user_id,
+        sd.last_updated_by_user_id as sd_last_updated_by_user_id,
+        sd.created_at as sd_created_at, sd.updated_at as sd_updated_at,
+        sd.version as sd_version
+    </sql>
+
+    <sql id="courseInfoColumns">
+        ci.id as ci_id, ci.course_code as ci_course_code, ci.course_name as ci_course_name,
+        ci.description as ci_description
+    </sql>
+
+    <sql id="userCreatorColumns">
+        uc.username as creator_username, uc.nickname as creator_nickname
+    </sql>
+
+    <sql id="userUpdaterColumns">
+        uu.username as updater_username, uu.nickname as updater_nickname
+    </sql>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO shared_documents (title, content, course_id, created_by_user_id, last_updated_by_user_id, created_at, updated_at, version)
+        VALUES (#{title}, #{content}, #{courseId}, #{createdByUserId}, #{lastUpdatedByUserId}, #{createdAt}, #{updatedAt}, #{version})
+    </insert>
+
+    <select id="findById" resultMap="SharedDocumentResponseDtoResultMap">
+        SELECT
+            <include refid="sharedDocumentColumns"/>,
+            <include refid="courseInfoColumns"/>,
+            <include refid="userCreatorColumns"/>,
+            <include refid="userUpdaterColumns"/>
+        FROM shared_documents sd
+        JOIN course_info ci ON sd.course_id = ci.id
+        JOIN users uc ON sd.created_by_user_id = uc.id
+        JOIN users uu ON sd.last_updated_by_user_id = uu.id
+        WHERE sd.id = #{id}
+    </select>
+    
+    <select id="findRawById" resultMap="SharedDocumentEntityResultMap">
+        SELECT
+            <include refid="sharedDocumentColumns"/>
+        FROM shared_documents sd
+        WHERE sd.id = #{id}
+    </select>
+
+    <select id="findByCourseId" resultMap="SharedDocumentResponseDtoResultMap">
+        SELECT
+            <include refid="sharedDocumentColumns"/>,
+            <include refid="courseInfoColumns"/>,
+            <include refid="userCreatorColumns"/>,
+            <include refid="userUpdaterColumns"/>
+        FROM shared_documents sd
+        JOIN course_info ci ON sd.course_id = ci.id
+        JOIN users uc ON sd.created_by_user_id = uc.id
+        JOIN users uu ON sd.last_updated_by_user_id = uu.id
+        WHERE sd.course_id = #{courseId}
+        ORDER BY sd.updated_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countByCourseId" resultType="long">
+        SELECT COUNT(*)
+        FROM shared_documents
+        WHERE course_id = #{courseId}
+    </select>
+
+    <update id="update">
+        UPDATE shared_documents
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="courseId != null">course_id = #{courseId},</if>
+            <if test="lastUpdatedByUserId != null">last_updated_by_user_id = #{lastUpdatedByUserId},</if>
+            updated_at = #{updatedAt}, <!-- Always update updatedAt -->
+            version = #{version} <!-- Always update version -->
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM shared_documents WHERE id = #{id}
+    </delete>
+
+    <sql id="documentSearchCondition">
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (
+                LOWER(sd.title) LIKE LOWER(CONCAT('%', #{searchTerm}, '%'))
+                OR LOWER(sd.content) LIKE LOWER(CONCAT('%', #{searchTerm}, '%')) 
+                /* Searching content with LIKE can be slow. Consider full-text search for production. */
+            )
+        </if>
+        <if test="courseId != null">
+            AND sd.course_id = #{courseId}
+        </if>
+    </sql>
+
+    <select id="searchSharedDocuments" resultMap="SharedDocumentResponseDtoResultMap">
+        SELECT
+            <include refid="sharedDocumentColumns"/>,
+            <include refid="courseInfoColumns"/>,
+            <include refid="userCreatorColumns"/>,
+            <include refid="userUpdaterColumns"/>
+        FROM shared_documents sd
+        JOIN course_info ci ON sd.course_id = ci.id
+        JOIN users uc ON sd.created_by_user_id = uc.id
+        JOIN users uu ON sd.last_updated_by_user_id = uu.id
+        <where>
+            <include refid="documentSearchCondition"/>
+        </where>
+        ORDER BY sd.updated_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countSearchSharedDocuments" resultType="long">
+        SELECT COUNT(DISTINCT sd.id)
+        FROM shared_documents sd
+        JOIN course_info ci ON sd.course_id = ci.id
+        JOIN users uc ON sd.created_by_user_id = uc.id
+        JOIN users uu ON sd.last_updated_by_user_id = uu.id
+         <where>
+            <include refid="documentSearchCondition"/>
+        </where>
+    </select>
+
+</mapper>

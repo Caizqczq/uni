@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unilife.mapper.PersonalEventMapper">
+
+    <resultMap id="PersonalEventResultMap" type="com.unilife.model.entity.PersonalEvent">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="location" column="location"/>
+        <result property="isAllDay" column="is_all_day"/>
+        <result property="color" column="color"/>
+        <result property="reminderEnabled" column="reminder_enabled"/>
+        <result property="reminderTime" column="reminder_time"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO personal_events (user_id, title, description, start_time, end_time,
+                                     location, is_all_day, color, reminder_enabled, reminder_time)
+        VALUES (#{userId}, #{title}, #{description}, #{startTime}, #{endTime},
+                #{location}, #{isAllDay}, #{color}, #{reminderEnabled}, #{reminderTime})
+    </insert>
+
+    <select id="findById" resultMap="PersonalEventResultMap">
+        SELECT * FROM personal_events WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="PersonalEventResultMap">
+        SELECT * FROM personal_events WHERE user_id = #{userId} ORDER BY start_time ASC
+    </select>
+
+    <select id="findByUserIdAndDateRange" resultMap="PersonalEventResultMap">
+        SELECT * FROM personal_events
+        WHERE user_id = #{userId}
+          AND (
+            (start_time &gt;= #{rangeStart} AND start_time &lt; #{rangeEnd}) OR
+            (end_time &gt; #{rangeStart} AND end_time &lt;= #{rangeEnd}) OR
+            (start_time &lt; #{rangeStart} AND end_time &gt; #{rangeEnd})
+          )
+        ORDER BY start_time ASC
+    </select>
+    <!-- Note: The date range query above is inclusive for events that overlap the range.
+         Adjust conditions if precise start/end within range is needed.
+         For all-day events, ensure rangeStart and rangeEnd cover the entire day if that's the intent.
+         E.g., rangeStart = day.atStartOfDay(), rangeEnd = day.plusDays(1).atStartOfDay()
+    -->
+
+
+    <update id="update">
+        UPDATE personal_events
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="location != null">location = #{location},</if>
+            <!-- isAllDay is a boolean, so it's always passed. No null check needed if it's a primitive in DTO/Entity. -->
+            is_all_day = #{isAllDay},
+            <if test="color != null">color = #{color},</if>
+            reminder_enabled = #{reminderEnabled},
+            <if test="reminderTime != null or reminderEnabled == false">reminder_time = #{reminderTime},</if> <!-- Set reminderTime if provided, or nullify if reminder is disabled -->
+        </set>
+        WHERE id = #{id} AND user_id = #{userId} <!-- Ensure user owns the event -->
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM personal_events WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <select id="findPendingReminders" resultMap="PersonalEventResultMap">
+        SELECT *
+        FROM personal_events
+        WHERE user_id = #{userId}
+          AND reminder_enabled = TRUE
+          AND reminder_sent = FALSE
+          AND reminder_time &lt;= #{currentTime}
+    </select>
+
+</mapper>
