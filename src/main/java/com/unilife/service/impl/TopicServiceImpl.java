@@ -77,7 +77,7 @@ public class TopicServiceImpl implements TopicService {
         if (topicDto.getDescription() != null) {
             existingTopic.setDescription(topicDto.getDescription());
         }
-        
+
         topicMapper.update(existingTopic);
         return mapToDto(existingTopic);
     }

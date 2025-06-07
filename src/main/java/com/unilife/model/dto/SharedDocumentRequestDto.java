@@ -1,9 +1,18 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 // No validation annotations for now
+@Schema(description = "Data Transfer Object for creating or updating a shared document.")
 public class SharedDocumentRequestDto {
+
+    @Schema(description = "Title of the shared document.", example = "Lecture Notes - Week 1", requiredMode = Schema.RequiredMode.REQUIRED)
     private String title;
+
+    @Schema(description = "Content of the shared document (e.g., Markdown, plain text).", example = "# Chapter 1\n## Introduction...", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
+
+    @Schema(description = "ID of the course this document is associated with.", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long courseId;
 
     // Constructors

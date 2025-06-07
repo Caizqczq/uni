@@ -1,11 +1,21 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+@Schema(description = "Data Transfer Object for user's points information.")
 public class UserPointsDto {
+
+    @Schema(description = "User ID.", example = "100", accessMode = Schema.AccessMode.READ_ONLY)
     private Long userId;
+
+    @Schema(description = "Username of the user.", example = "pointUser", accessMode = Schema.AccessMode.READ_ONLY)
     private String username; // Denormalized from User entity
+
+    @Schema(description = "Total accumulated points for the user.", example = "1500")
     private int totalPoints;
+
+    @Schema(description = "Timestamp of when the user's points were last updated.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime lastUpdatedAt;
 
     // Constructors

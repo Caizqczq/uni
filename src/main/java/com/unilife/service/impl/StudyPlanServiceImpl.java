@@ -68,7 +68,7 @@ public class StudyPlanServiceImpl implements StudyPlanService {
         goal.setStatus("PENDING"); // Default status
         goal.setCreatedAt(LocalDateTime.now());
         goal.setUpdatedAt(LocalDateTime.now());
-        
+
         // Priority: use DTO's if set, otherwise entity default
         if (goalDto.getPriority() > 0) { // Assuming 0 is not a valid user-set priority
             goal.setPriority(goalDto.getPriority());
@@ -229,7 +229,7 @@ public class StudyPlanServiceImpl implements StudyPlanService {
         // userId, createdAt, updatedAt are set in the service method or by entity defaults
         return goal;
     }
-    
+
     private void updateEntityFromDto(StudyGoal goal, StudyGoalDto dto) {
         // courseId is handled in the main update method due to validation
         if (dto.getGoalTitle() != null) goal.setGoalTitle(dto.getGoalTitle());

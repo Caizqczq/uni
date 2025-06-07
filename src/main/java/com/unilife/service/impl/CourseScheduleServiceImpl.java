@@ -221,7 +221,7 @@ public class CourseScheduleServiceImpl implements CourseScheduleService {
         // userId is set in the service method
         return course;
     }
-    
+
     private void updateEntityFromDto(Course course, CourseDto dto) {
         if (dto.getCourseName() != null) course.setCourseName(dto.getCourseName());
         if (dto.getTeacherName() != null) course.setTeacherName(dto.getTeacherName());

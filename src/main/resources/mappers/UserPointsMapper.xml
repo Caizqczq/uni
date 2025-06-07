@@ -33,7 +33,7 @@
             last_updated_at = NOW() <!-- Or pass LocalDateTime from service -->
         WHERE user_id = #{userId}
     </update>
-    
+
     <!-- Alternative for updatePoints if need to handle lastUpdatedAt from service -->
     <!--
     <update id="updatePointsWithTime">

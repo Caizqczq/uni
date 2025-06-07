@@ -49,7 +49,7 @@
         FROM point_transactions
         WHERE user_id = #{userId}
     </select>
-    
+
     <select id="findLastDailyLoginTransaction" resultMap="PointTransactionEntityResultMap">
         SELECT id as pt_id, user_id as pt_user_id, points_awarded as pt_points_awarded,
                action_type as pt_action_type, description as pt_description,

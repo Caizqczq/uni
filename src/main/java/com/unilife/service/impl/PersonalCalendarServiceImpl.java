@@ -107,7 +107,7 @@ public class PersonalCalendarServiceImpl implements PersonalCalendarService {
             // throw new AccessDeniedException("User not authorized to update this event");
             throw new RuntimeException("User not authorized to update this event (placeholder for AccessDeniedException)");
         }
-        
+
         // Basic validation for update
         if (eventDto.getStartTime() != null && eventDto.getEndTime() != null &&
             eventDto.getStartTime().isAfter(eventDto.getEndTime())) {
@@ -119,7 +119,7 @@ public class PersonalCalendarServiceImpl implements PersonalCalendarService {
         if (newStartTime.isAfter(newEndTime)) {
              throw new IllegalArgumentException("Invalid event times. Start time must be before or equal to end time considering existing values.");
         }
-        
+
         boolean reminderEnabled = eventDto.isReminderEnabled(); // Check DTO's explicit value
         LocalDateTime reminderTime = eventDto.getReminderTime();
 
@@ -191,7 +191,7 @@ public class PersonalCalendarServiceImpl implements PersonalCalendarService {
         // userId is set in the service method
         return event;
     }
-    
+
     private void updateEntityFromDto(PersonalEvent event, PersonalEventDto dto) {
         if (dto.getTitle() != null) event.setTitle(dto.getTitle());
         if (dto.getDescription() != null) event.setDescription(dto.getDescription());

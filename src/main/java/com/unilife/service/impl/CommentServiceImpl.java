@@ -76,7 +76,7 @@ public class CommentServiceImpl implements CommentService {
         }
         return commentMapper.findByPostIdWithDetails(postId);
     }
-    
+
     @Override
     public CommentResponseDto getCommentById(Long id) {
         CommentResponseDto commentDto = commentMapper.findByIdWithDetails(id);

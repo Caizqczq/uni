@@ -1,17 +1,39 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+@Schema(description = "Data Transfer Object for displaying a forum post, including author and topic details.")
 public class PostResponseDto {
+
+    @Schema(description = "Unique identifier of the post.", example = "101", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+
+    @Schema(description = "Title of the post.", example = "My First Post")
     private String title;
+
+    @Schema(description = "Content of the post.", example = "This is the content of my first post.")
     private String content;
+
+    @Schema(description = "Username of the post author.", example = "john.doe")
     private String authorUsername;
+
+    @Schema(description = "Nickname of the post author.", example = "JohnnyD")
     private String authorNickname; // Added
+
+    @Schema(description = "Avatar URL of the post author.", example = "http://example.com/avatar.jpg")
     private String authorAvatarUrl; // Added
+
+    @Schema(description = "Name of the topic this post belongs to.", example = "General Discussion")
     private String topicName; // Or Long topicId / TopicDto topic
+
+    @Schema(description = "Timestamp of when the post was created.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
+
+    @Schema(description = "Timestamp of when the post was last updated.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
+
+    @Schema(description = "Number of likes this post has received.", example = "42")
     private int likesCount;
 
     // Constructors

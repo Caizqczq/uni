@@ -143,7 +143,7 @@ public class UserServiceImplTest {
         // Authentication successfulAuthentication = mock(Authentication.class);
         // when(authenticationManager.authenticate(any())).thenReturn(successfulAuthentication);
         // when(successfulAuthentication.getPrincipal()).thenReturn(new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), Collections.emptyList()));
-        
+
         // Direct user fetching for placeholder logic in UserServiceImpl
         when(userMapper.findByUsername(loginDto.getUsernameOrEmail())).thenReturn(user);
         when(jwtUtil.generateToken(any())).thenReturn("dummy.jwt.token");
@@ -192,7 +192,7 @@ public class UserServiceImplTest {
         // when(authenticationManager.authenticate(any())).thenReturn(successfulAuthentication);
         // when(successfulAuthentication.getPrincipal()).thenReturn(new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), Collections.emptyList()));
         // when(userMapper.findByUsername(user.getUsername())).thenReturn(user); // User fetched after authentication
-        
+
         // For direct fetching placeholder:
         when(userMapper.findByUsername(loginDto.getUsernameOrEmail())).thenReturn(user);
 
@@ -248,7 +248,7 @@ public class UserServiceImplTest {
         assertEquals("Verification token has expired: " + tokenString, exception.getMessage());
         verify(verificationTokenMapper).deleteByToken(tokenString);
     }
-    
+
     @Test
     void resendVerificationEmail_success() {
         user.setEnabled(false); // User is not yet enabled
@@ -285,7 +285,7 @@ public class UserServiceImplTest {
         });
         assertEquals("Account is already verified for email: " + user.getEmail(), exception.getMessage());
     }
-    
+
     @Test
     void getUserProfile_success() {
         when(userMapper.findByUsername(user.getUsername())).thenReturn(user);
@@ -311,7 +311,7 @@ public class UserServiceImplTest {
         UserProfileDto profileUpdateDto = new UserProfileDto();
         profileUpdateDto.setNickname("NewNick");
         profileUpdateDto.setSchool("NewSchool");
-        
+
         when(userMapper.findByUsername(user.getUsername())).thenReturn(user);
         doNothing().when(userMapper).update(any(User.class));
 
@@ -328,7 +328,7 @@ public class UserServiceImplTest {
         String nonExistentUsername = "ghost";
         UserProfileDto profileUpdateDto = new UserProfileDto();
         when(userMapper.findByUsername(nonExistentUsername)).thenReturn(null);
-        
+
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
             userService.updateUserProfile(nonExistentUsername, profileUpdateDto);
         });

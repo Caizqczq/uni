@@ -1,12 +1,17 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 // import javax.validation.constraints.NotBlank;
 
+@Schema(description = "Data Transfer Object for user login.")
 public class UserLoginDto {
 
+    @Schema(description = "Username or email address of the user.", example = "john.doe", requiredMode = Schema.RequiredMode.REQUIRED)
     // @NotBlank(message = "Username or email cannot be blank")
     private String usernameOrEmail;
 
+    @Schema(description = "Password for the account.", example = "P@$$wOrd", requiredMode = Schema.RequiredMode.REQUIRED)
     // @NotBlank(message = "Password cannot be blank")
     private String password;
 

@@ -1,15 +1,33 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+@Schema(description = "Data Transfer Object for displaying a comment, including author details.")
 public class CommentResponseDto {
+
+    @Schema(description = "Unique identifier of the comment.", example = "201", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+
+    @Schema(description = "Content of the comment.", example = "This is a great post!")
     private String content;
+
+    @Schema(description = "Username of the comment author.", example = "jane.doe")
     private String authorUsername;
+
+    @Schema(description = "Nickname of the comment author.", example = "Janie")
     private String authorNickname; // Added
+
+    @Schema(description = "Avatar URL of the comment author.", example = "http://example.com/avatar_jane.jpg")
     private String authorAvatarUrl; // Added
+
+    @Schema(description = "ID of the post this comment belongs to.", example = "101")
     private Long postId;
+
+    @Schema(description = "ID of the parent comment if this is a reply. Null if it's a top-level comment.", example = "null", nullable = true)
     private Long parentCommentId; // Optional
+
+    @Schema(description = "Timestamp of when the comment was created.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 
     // Constructors

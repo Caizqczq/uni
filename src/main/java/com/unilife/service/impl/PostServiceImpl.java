@@ -192,7 +192,7 @@ public class PostServiceImpl implements PostService {
         postLikeMapper.deleteByUserIdAndPostId(user.getId(), postId);
         postMapper.decrementLikesCount(postId);
     }
-    
+
     // @Override // Ensure this is part of PostService interface if not already
     public PageResponse<PostResponseDto> searchPosts(String searchTerm, Long topicId, Long userId, int page, int size) {
         Map<String, Object> params = new HashMap<>();

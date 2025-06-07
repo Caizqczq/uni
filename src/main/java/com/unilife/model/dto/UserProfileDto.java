@@ -1,11 +1,26 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Data Transfer Object for user profile information.")
 public class UserProfileDto {
+
+    @Schema(description = "Username of the user.", example = "john.doe", requiredMode = Schema.RequiredMode.REQUIRED)
     private String username;
+
+    @Schema(description = "Email address of the user.", example = "john.doe@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
+
+    @Schema(description = "Public nickname of the user.", example = "JohnnyD", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String nickname;
+
+    @Schema(description = "URL to the user's avatar image.", example = "http://example.com/avatar.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String avatarUrl;
+
+    @Schema(description = "School the user attends.", example = "Example University", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String school;
+
+    @Schema(description = "Student ID of the user.", example = "S1234567", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String studentId;
 
     // Constructors
