@@ -55,7 +55,7 @@
         LEFT JOIN courses c ON sg.course_id = c.id <!-- Assuming 'courses' table name -->
         WHERE sg.id = #{id}
     </select>
-    
+
     <select id="findRawById" resultMap="StudyGoalEntityResultMap">
         SELECT
             <include refid="studyGoalColumns"/>

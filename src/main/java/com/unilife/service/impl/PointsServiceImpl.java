@@ -107,7 +107,7 @@ public class PointsServiceImpl implements PointsService {
         }
         return userPointsMapper.findLeaderboard(limit);
     }
-    
+
     @Override
     // @Transactional
     public void awardDailyLoginPoints(String username) {
@@ -118,7 +118,7 @@ public class PointsServiceImpl implements PointsService {
 
         // Check if daily login points already awarded today for this user
         PointTransaction lastLoginTransaction = pointTransactionMapper.findLastDailyLoginTransaction(user.getId(), PointActionType.DAILY_LOGIN.name());
-        
+
         boolean shouldAward = true;
         if (lastLoginTransaction != null) {
             if (lastLoginTransaction.getTransactionDate().toLocalDate().isEqual(LocalDate.now())) {

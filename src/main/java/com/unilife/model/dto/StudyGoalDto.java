@@ -1,22 +1,52 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Schema(description = "Data Transfer Object for study goals.")
 public class StudyGoalDto {
+
+    @Schema(description = "Unique identifier of the study goal.", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    private Long userId; // For admin/service layer, not usually returned to user directly if it's their own goal
+
+    @Schema(description = "User ID this goal belongs to. Usually set by the system.", example = "100", accessMode = Schema.AccessMode.READ_ONLY)
+    private Long userId;
+
+    @Schema(description = "ID of the course this goal is related to. Optional.", example = "1", nullable = true)
     private Long courseId;
+
+    @Schema(description = "Name of the course this goal is related to. Read-only, populated if courseId is set.", example = "Advanced Calculus", accessMode = Schema.AccessMode.READ_ONLY, nullable = true)
     private String courseName; // Denormalized
+
+    @Schema(description = "Title of the study goal.", example = "Complete Chapter 3 exercises", requiredMode = Schema.RequiredMode.REQUIRED)
     private String goalTitle;
+
+    @Schema(description = "Detailed description of the study goal.", example = "Focus on problems 3.5 to 3.10.", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String goalDescription;
+
+    @Schema(description = "Target date for achieving the goal.", example = "2023-12-15", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDate targetDate;
+
+    @Schema(description = "Current status of the goal (e.g., PENDING, IN_PROGRESS, COMPLETED, CANCELLED).", example = "PENDING", defaultValue = "PENDING")
     private String status;
+
+    @Schema(description = "Priority of the goal (e.g., 1-Low, 2-Medium, 3-High).", example = "2", defaultValue = "2")
     private int priority;
+
+    @Schema(description = "Timestamp of when the goal was created.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
+
+    @Schema(description = "Timestamp of when the goal was last updated.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
+
+    @Schema(description = "Flag indicating if a reminder is enabled for this goal.", example = "false", defaultValue = "false")
     private boolean reminderEnabled;
+
+    @Schema(description = "Specific time for the reminder. Optional, relevant if reminderEnabled is true.", example = "2023-12-14T09:00:00", nullable = true)
     private LocalDateTime reminderTime;
+
+    @Schema(description = "Flag indicating if the reminder has been sent.", example = "false", accessMode = Schema.AccessMode.READ_ONLY)
     private boolean reminderSent;
 
     // Constructors

@@ -50,7 +50,7 @@
         LEFT JOIN users u ON na.user_id = u.id
         WHERE na.id = #{id}
     </select>
-    
+
     <select id="findRawById" resultMap="NewsArticleEntityResultMap">
         SELECT
             <include refid="newsArticleColumns"/>

@@ -69,7 +69,7 @@
         JOIN users uu ON sd.last_updated_by_user_id = uu.id
         WHERE sd.id = #{id}
     </select>
-    
+
     <select id="findRawById" resultMap="SharedDocumentEntityResultMap">
         SELECT
             <include refid="sharedDocumentColumns"/>
@@ -121,7 +121,7 @@
         <if test="searchTerm != null and searchTerm != ''">
             AND (
                 LOWER(sd.title) LIKE LOWER(CONCAT('%', #{searchTerm}, '%'))
-                OR LOWER(sd.content) LIKE LOWER(CONCAT('%', #{searchTerm}, '%')) 
+                OR LOWER(sd.content) LIKE LOWER(CONCAT('%', #{searchTerm}, '%'))
                 /* Searching content with LIKE can be slow. Consider full-text search for production. */
             )
         </if>

@@ -1,11 +1,21 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
+@Schema(description = "Data Transfer Object for displaying course-related learning resources.")
 public class CourseRelatedResourcesDto {
+
+    @Schema(description = "ID of the course.", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long courseId;
+
+    @Schema(description = "Name of the course.", example = "Introduction to Computer Science", accessMode = Schema.AccessMode.READ_ONLY)
     private String courseName;
+
+    @Schema(description = "List of shared documents related to the course.")
     private List<SharedDocumentResponseDto> sharedDocuments;
+
+    @Schema(description = "List of shared files related to the course.")
     private List<SharedFileResponseDto> sharedFiles;
 
     // Constructors

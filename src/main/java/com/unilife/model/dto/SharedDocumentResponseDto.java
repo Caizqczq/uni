@@ -1,16 +1,36 @@
 package com.unilife.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+@Schema(description = "Data Transfer Object for displaying a shared document, including course and user details.")
 public class SharedDocumentResponseDto {
+
+    @Schema(description = "Unique identifier of the shared document.", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+
+    @Schema(description = "Title of the shared document.", example = "Lecture Notes - Week 1")
     private String title;
+
+    @Schema(description = "Content of the shared document.", example = "# Chapter 1\n## Introduction...")
     private String content;
+
+    @Schema(description = "Information about the course this document is associated with.")
     private CourseInfoDto courseInfo; // Embed CourseInfo DTO
+
+    @Schema(description = "Username of the user who created the document.", example = "docCreator", accessMode = Schema.AccessMode.READ_ONLY)
     private String createdByUsername;
+
+    @Schema(description = "Username of the user who last updated the document.", example = "docUpdater", accessMode = Schema.AccessMode.READ_ONLY)
     private String lastUpdatedByUsername;
+
+    @Schema(description = "Timestamp of when the document was created.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
+
+    @Schema(description = "Timestamp of when the document was last updated.", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
+
+    @Schema(description = "Version number of the document.", example = "2", accessMode = Schema.AccessMode.READ_ONLY)
     private int version;
 
     // Constructors

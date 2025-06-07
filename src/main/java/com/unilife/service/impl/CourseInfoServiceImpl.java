@@ -28,7 +28,7 @@ public class CourseInfoServiceImpl implements CourseInfoService {
         this.courseInfoMapper = courseInfoMapper;
         this.sharedDocumentMapper = sharedDocumentMapper;
     }
-    
+
     public PageResponse<CourseInfoDto> searchCourses(String searchTerm, int page, int size) {
         Map<String, Object> params = new HashMap<>();
         params.put("searchTerm", searchTerm);
@@ -37,7 +37,7 @@ public class CourseInfoServiceImpl implements CourseInfoService {
 
         List<CourseInfo> courseInfos = courseInfoMapper.searchCourses(params);
         long totalElements = courseInfoMapper.countSearchCourses(params);
-        
+
         List<CourseInfoDto> dtos = courseInfos.stream().map(this::mapToDto).collect(Collectors.toList());
         return new PageResponse<>(dtos, page, size, totalElements);
     }
@@ -100,7 +100,7 @@ public class CourseInfoServiceImpl implements CourseInfoService {
         if (courseInfoDto.getDescription() != null) {
             existingCourseInfo.setDescription(courseInfoDto.getDescription());
         }
-        
+
         courseInfoMapper.update(existingCourseInfo);
         return mapToDto(existingCourseInfo);
     }
@@ -119,7 +119,7 @@ public class CourseInfoServiceImpl implements CourseInfoService {
             throw new IllegalStateException("Cannot delete course with id " + id + " as it has " +
                                             linkedDocumentsCount + " linked shared document(s). Please delete or reassign them first.");
         }
-        
+
         courseInfoMapper.deleteById(id);
     }
 

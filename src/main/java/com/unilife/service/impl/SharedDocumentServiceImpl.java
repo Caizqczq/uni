@@ -124,7 +124,7 @@ public class SharedDocumentServiceImpl implements SharedDocumentService {
             }
             document.setCourseId(course.getId());
         }
-        
+
         document.setLastUpdatedByUserId(currentUser.getId());
         document.setUpdatedAt(LocalDateTime.now()); // Manually trigger update time
         document.setVersion(document.getVersion() + 1); // Increment version

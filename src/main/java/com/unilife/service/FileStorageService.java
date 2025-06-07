@@ -69,7 +69,7 @@ public interface FileStorageService {
      * @param username The username of the user attempting deletion (for permission checks).
      */
     void deleteFile(Long fileId, String username);
-    
+
     /**
      * Initializes the file storage directory.
      */

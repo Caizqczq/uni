@@ -51,7 +51,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         this.fileStorageLocation = Paths.get(this.uploadDir).toAbsolutePath().normalize();
         initStorage(); // Initialize storage on service creation
     }
-    
+
     @Override
     public void initStorage() {
         try {
@@ -78,7 +78,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                 throw new ResourceNotFoundException("CourseInfo not found with id: " + courseId);
             }
         }
-        
+
         // Validate file name (basic validation)
         // String fileName = StringUtils.cleanPath(originalFileName); // Spring specific
         String fileName = originalFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
@@ -87,7 +87,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         if (fileName.contains("..")) {
             throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
         }
-        
+
         // Generate unique stored file name
         String fileExtension = "";
         int lastDot = fileName.lastIndexOf('.');
@@ -168,7 +168,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         params.put("courseId", courseId); // Mapper should handle null courseId if desired
         params.put("offset", page * size);
         params.put("limit", size);
-        
+
         List<SharedFileResponseDto> files = sharedFileMapper.findByCourseId(params);
         long totalElements = sharedFileMapper.countByCourseId(courseId);
         return new PageResponse<>(files, page, size, totalElements);
@@ -209,7 +209,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new FileStorageException("Could not delete file " + sharedFile.getFileName() + ". Please try again!", ex);
         }
     }
-    
+
     // For Spring @Value injection if not done in constructor
     // public void setUploadDir(String uploadDir) {
     //     this.uploadDir = uploadDir;

@@ -89,7 +89,7 @@ public class UserControllerIntegrationTest {
         assertNotNull(token, "Verification token should be created for the user");
         assertEquals(dbUser.getId(), token.getUser().getId());
     }
-    
+
     // Helper to find a token for a user (if you don't have a direct method)
     // This is a bit of a workaround for testing, ideally service method would return token or it's predictable
     private VerificationToken findTokenForUser(Long userId) {
@@ -139,7 +139,7 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.error", is("Conflict")))
                 .andExpect(jsonPath("$.message", is("Email already exists: " + registrationDto.getEmail())));
     }
-    
+
     @Test
     void registerUser_invalidInput_blankUsername_shouldReturnBadRequest() throws Exception {
         registrationDto.setUsername(""); // Invalid: blank username
@@ -178,7 +178,7 @@ public class UserControllerIntegrationTest {
         // 2. Verify email
         mockMvc.perform(get("/api/users/verify-email").param("token", token.getToken()))
                 .andExpect(status().isOk());
-        
+
         dbUser = userMapper.findByUsername(registrationDto.getUsername()); // Re-fetch user
         assertTrue(dbUser.isEnabled(), "User should be enabled after verification");
 
@@ -194,7 +194,7 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.token", notNullValue()))
                 .andExpect(jsonPath("$.userProfile.username", is(registrationDto.getUsername())))
                 .andReturn();
-        
+
         // String responseString = result.getResponse().getContentAsString();
         // System.out.println("Login Response: " + responseString); // For debugging
     }
@@ -206,7 +206,7 @@ public class UserControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registrationDto)))
                 .andExpect(status().isCreated());
-        
+
         User dbUser = userMapper.findByUsername(registrationDto.getUsername());
         assertNotNull(dbUser);
         VerificationToken token = findTokenForUser(dbUser.getId());
@@ -245,7 +245,7 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.error", is("Forbidden")))
                 .andExpect(jsonPath("$.message", is("User account is not enabled. Please verify your email: " + registrationDto.getEmail())));
     }
-    
+
     // --- Email Verification Tests ---
     @Test
     void verifyEmail_validToken_shouldEnableUser() throws Exception {
@@ -268,7 +268,7 @@ public class UserControllerIntegrationTest {
 
         User verifiedUser = userMapper.findByUsername(registrationDto.getUsername());
         assertTrue(verifiedUser.isEnabled(), "User should be enabled after verification.");
-        
+
         VerificationToken usedToken = verificationTokenMapper.findByToken(token.getToken());
         assertNull(usedToken, "Verification token should be deleted after use.");
     }
@@ -301,12 +301,12 @@ public class UserControllerIntegrationTest {
                 .param("token", token.getToken()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Verification token has expired: " + token.getToken())));
-        
+
         // Check if token was deleted
         VerificationToken expiredToken = verificationTokenMapper.findByToken(token.getToken());
         assertNull(expiredToken, "Expired token should be deleted by the service after check.");
     }
-    
+
     // Helper methods in VerificationTokenMapper would be needed:
     // - findAllByUserId(Long userId) -> List<VerificationToken>
     // - updateTokenExpiry(String token, LocalDateTime newExpiryDate)
@@ -333,7 +333,7 @@ public class UserControllerIntegrationTest {
 
         mockMvc.perform(get("/api/users/verify-email").param("token", token.getToken()))
                 .andExpect(status().isOk());
-        
+
         return userMapper.findByUsername(username); // Return the now enabled user
     }
 
@@ -356,18 +356,18 @@ public class UserControllerIntegrationTest {
         // Setup user "testuser" whose profile is being accessed
         setupVerifiedUser("testuser", "testuser@example.com", "password123");
         // "anotheruser" is trying to access "testuser"'s profile
-        
+
         mockMvc.perform(get("/api/users/profile/testuser")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden()); // Because @PreAuthorize blocks it
     }
-    
+
     @Test
     @WithMockUser(username = "adminuser", roles = {"ADMIN"}) // Admin user
     void getUserProfile_adminUser_other_shouldReturnProfile() throws Exception {
         // Setup user "testuser" whose profile is being accessed by admin
         setupVerifiedUser("testuser", "testuser@example.com", "password123");
-        
+
         mockMvc.perform(get("/api/users/profile/testuser")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -408,7 +408,7 @@ public class UserControllerIntegrationTest {
         assertEquals("UpdatedNick", dbUser.getNickname());
         assertEquals("Updated School", dbUser.getSchool());
     }
-    
+
     @Test
     @WithMockUser(username = "updateuser", roles = {"USER"})
     void updateUserProfile_authenticatedUser_self_invalidData_shouldReturnBadRequest() throws Exception {
@@ -417,7 +417,7 @@ public class UserControllerIntegrationTest {
         // and might result in a different error or success if the "invalid" data is acceptable by service.
         // For a true bad request due to DTO validation, those would need to be added.
         // Let's assume for now an empty nickname is considered invalid by service or a future DTO validation.
-        
+
         setupVerifiedUser("updateuser", "updateuser@example.com", "password123");
 
         UserProfileDto profileUpdateDto = new UserProfileDto();
